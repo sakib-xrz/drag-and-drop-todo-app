@@ -6,9 +6,12 @@ import Card from "@/components/Card";
 export default function Home() {
     const [todos, setTodos] = useState([]);
     const [completed, setCompleted] = useState([]);
+    const [addedCompleted, setAddedCompleted] = useState(false);
+    const [draggedIndex, setDraggedIndex] = useState(null);
 
-    const handleDragStart = (event, todo) => {
+    const handleDragStart = (event, todo, index) => {
         event.dataTransfer.setData("text/plain", todo);
+        setDraggedIndex(index);
     };
 
     const handleDragOver = (event) => {
@@ -21,15 +24,23 @@ export default function Home() {
 
         if (target === "todos") {
             setTodos([...todos, todo]);
+            setAddedCompleted(false);
         } else if (target === "completed") {
-            setCompleted([...completed, todo]);
+            if (!completed.includes(todo)) {
+                setCompleted([...completed, todo]);
+                setAddedCompleted(true);
+            }
         }
     };
 
-    const handleRemoveTodo = (index) => {
-        const newTodos = [...todos];
-        newTodos.splice(index, 1);
-        setTodos(newTodos);
+    const handleRemoveTodo = () => {
+        if (addedCompleted && draggedIndex !== null) {
+            const newTodos = [...todos];
+            newTodos.splice(draggedIndex, 1);
+            setTodos(newTodos);
+            setDraggedIndex(null);
+            setAddedCompleted(false);
+        }
     };
 
     return (
@@ -73,14 +84,13 @@ export default function Home() {
                         {todos.map((todo, index) => (
                             <div
                                 key={index}
-                                className="cursor-pointer"
                                 draggable
                                 onDragStart={(event) =>
-                                    handleDragStart(event, todo)
+                                    handleDragStart(event, todo, index)
                                 }
-                                onDragEnd={() => handleRemoveTodo(index)}
+                                onDragEnd={() => handleRemoveTodo()}
                             >
-                                <Card>{todo}</Card>
+                                <Card drag={true}>{todo}</Card>
                             </div>
                         ))}
                     </div>
