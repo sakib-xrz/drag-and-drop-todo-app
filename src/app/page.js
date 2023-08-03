@@ -23,7 +23,6 @@ export default function Home() {
         const todo = event.dataTransfer.getData("text/plain");
 
         if (target === "todos") {
-            setTodos([...todos, todo]);
             setAddedCompleted(false);
         } else if (target === "completed") {
             if (!completed.includes(todo)) {
@@ -41,6 +40,17 @@ export default function Home() {
             setDraggedIndex(null);
             setAddedCompleted(false);
         }
+    };
+
+    const handleDeleteTodo = (draggedIndex) => {
+        const newTodos = [...todos];
+        newTodos.splice(draggedIndex, 1);
+        setTodos(newTodos);
+    };
+    const handleDeleteComplete = (draggedIndex) => {
+        const newComplete = [...completed];
+        newComplete.splice(draggedIndex, 1);
+        setCompleted(newComplete);
     };
 
     return (
@@ -90,7 +100,12 @@ export default function Home() {
                                 }
                                 onDragEnd={() => handleRemoveTodo()}
                             >
-                                <Card drag={true}>{todo}</Card>
+                                <Card
+                                    onClick={() => handleDeleteTodo(index)}
+                                    drag={true}
+                                >
+                                    {todo}
+                                </Card>
                             </div>
                         ))}
                     </div>
@@ -105,7 +120,12 @@ export default function Home() {
                         onDrop={(event) => handleDrop(event, "completed")}
                     >
                         {completed.map((todo, index) => (
-                            <Card key={index}>{todo}</Card>
+                            <Card
+                                onClick={() => handleDeleteComplete(index)}
+                                key={index}
+                            >
+                                {todo}
+                            </Card>
                         ))}
                     </div>
                 </div>
