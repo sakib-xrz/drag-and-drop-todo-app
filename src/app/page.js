@@ -8,6 +8,9 @@ export default function Home() {
     const [completed, setCompleted] = useState([]);
     const [addedCompleted, setAddedCompleted] = useState(false);
     const [draggedIndex, setDraggedIndex] = useState(null);
+    const [lastCompletedTodo, setLastCompletedTodo] = useState(null);
+    const [undoTimer, setUndoTimer] = useState(null);
+    const UNDO_DELAY = 5000; // 5 seconds (in milliseconds)
 
     const handleDragStart = (event, todo, index) => {
         event.dataTransfer.setData("text/plain", todo);
@@ -28,6 +31,16 @@ export default function Home() {
             if (!completed.includes(todo)) {
                 setCompleted([...completed, todo]);
                 setAddedCompleted(true);
+
+                // Set the last completed todo and start the undo timer
+                setLastCompletedTodo(todo);
+                if (undoTimer) clearTimeout(undoTimer);
+                setUndoTimer(
+                    setTimeout(() => {
+                        setLastCompletedTodo(null);
+                        setUndoTimer(null);
+                    }, UNDO_DELAY)
+                );
             }
         }
     };
@@ -130,6 +143,29 @@ export default function Home() {
                     </div>
                 </div>
             </div>
+            {lastCompletedTodo && (
+                <div className="px-3 py-1 text-center absolute bottom-5 right-5">
+                    <button
+                        onClick={() => {
+                            // Remove the last completed todo from the "completed" list
+                            setCompleted((prevCompleted) =>
+                                prevCompleted.filter(
+                                    (todo) => todo !== lastCompletedTodo
+                                )
+                            );
+                            // Add the last completed todo back to the "todos" list
+                            setTodos([...todos, lastCompletedTodo]);
+                            // Clear the lastCompletedTodo and the undo timer
+                            setLastCompletedTodo(null);
+                            clearTimeout(undoTimer);
+                            setUndoTimer(null);
+                        }}
+                        className="bg-red-500 text-white py-1 px-3 rounded-md"
+                    >
+                        Undo
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
